@@ -2,7 +2,7 @@
 
 Welcome! Follow these steps to set up the project environment and start developing.
 
-This demo is a vanilla implementation of Didit Authentication and Didit Identity Verification.
+This demo is a vanilla implementation of Didit Authentication, Data and Identity Verification. Didit Payments will be implemented soon.
 
 ### Step 1: Clone the Repository
 
