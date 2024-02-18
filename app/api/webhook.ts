@@ -79,6 +79,22 @@ export default async function handler(
         },
       });
 
+      // if status is approved then modify the user's isVerified field
+      if (status === "Approved") {
+        // get user id from verification session
+        const userId = updateResult.userId;
+
+        // update user isVerified field
+        await prismaDb.user.update({
+          where: {
+            id: userId,
+          },
+          data: {
+            isVerified: true,
+          },
+        });
+      }
+
       res.status(200).json({ message: "Webhook event dispatched" });
     } else {
       res.status(401).send("Unauthorized");
