@@ -7,17 +7,15 @@ Welcome! Follow these steps to set up the project environment and start developi
 Begin by cloning the repository to your local machine. Open a terminal and run:
 
 ```bash
-git clone <REPOSITORY_URL>
+git clone https://github.com/didit-protocol/didit-full-demo.git
 ```
-
-Make sure to replace `<REPOSITORY_URL>` with the actual URL of the repository.
 
 ### Step 2: Install Dependencies
 
 Navigate into the project directory and install its dependencies:
 
 ```bash
-cd <REPOSITORY_NAME>
+cd didit-full-demo
 npm install
 ```
 
