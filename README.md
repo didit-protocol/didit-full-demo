@@ -2,6 +2,8 @@
 
 Welcome! Follow these steps to set up the project environment and start developing.
 
+This demo is a vanilla implementation of Didit Authentication and Didit Identity Verification.
+
 ### Step 1: Clone the Repository
 
 Begin by cloning the repository to your local machine. Open a terminal and run:

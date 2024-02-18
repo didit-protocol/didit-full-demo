@@ -49,7 +49,7 @@ const DiditProviderComponent = ({
         claims={process.env.NEXT_PUBLIC_DIDIT_CLAIMS}
         redirectUri={process.env.NEXT_PUBLIC_DIDIT_REDIRECT_URI || ""}
         chains={chains}
-        walletAuthBaseUrl="/api"
+        walletAuthBaseUrl="/api/auth"
         tokenAuthorizationPath="/token"
         walletAuthorizationPath="/wallet-authorization"
       >
