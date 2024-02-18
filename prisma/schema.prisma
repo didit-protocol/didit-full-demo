@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id          String          @id @default(uuid())
+  name        String?
+  lastName    String?
+  email       String?         @unique
+  emailVerified DateTime?
+  image       String?
+  isVerified  Boolean  @default(false)
+  createdAt   DateTime        @default(now())
+  lastUpdatedAt DateTime       @updatedAt
+
+  // One-to-Many Relationship
+  verifications Verification[]
+
+  accounts     Account[]
+}
+
+model Account {
+  id                String   @id @default(uuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  access_token      String?
+  refresh_token     String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  // Relationships
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Constraints
+  @@unique([provider, providerAccountId])
+}
+
+// New Verification Model
+model Verification {
+  id                    String   @id @default(uuid())
+  userId                String
+  isVerified            Boolean  @default(false)
+  verificationSessionUrl String?
+  verificationStatus    String?
+  createdAt   DateTime        @default(now())
+  
+  // Relation to User
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId]) // This improves query performance on userId
+}
