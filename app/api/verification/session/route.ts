@@ -107,7 +107,7 @@ export async function POST(request: Request) {
       vendor_data
     );
 
-    // Use upsert to create or update the verification session
+    // Use upsert to create or update the verification session (not needed because webhook will do it)
     const upsertResult = await prismaDb.verification.upsert({
       where: {
         id: sessionData.session_id, // Assuming this is the unique identifier

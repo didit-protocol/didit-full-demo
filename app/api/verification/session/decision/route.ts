@@ -85,7 +85,7 @@ export async function POST(request: Request) {
 
     const data = await getSessionDecision(sessionId);
 
-    // modify verification session status
+    // modify verification session status (it is not needed because webhook will do it)
     const verificationSession = await prismaDb.verification.update({
       where: {
         id: sessionId,
