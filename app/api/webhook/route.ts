@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from "crypto";
+import { createHmac } from "crypto";
 import prismaDb from "../../libs/prismaDb";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -7,9 +7,7 @@ export const dynamic = "force-dynamic";
 
 // Function to encode data
 function encodeData(data: any): Buffer {
-  const formattedData = JSON.stringify(data, Object.keys(data))
-    .replace(/,/g, ", ")
-    .replace(/:/g, ": ");
+  const formattedData = JSON.stringify(data);
   return Buffer.from(formattedData, "utf-8");
 }
 
@@ -23,15 +21,8 @@ function verifySignature(
     .update(encodedData)
     .digest("hex");
 
-  const computedSignatureBuffer = Buffer.from(computedSignature, "hex");
-  const receivedSignatureBuffer = Buffer.from(receivedSignature, "hex");
-
-  // Ensure buffers are the same length
-  if (computedSignatureBuffer.length !== receivedSignatureBuffer.length) {
-    return false;
-  }
-
-  return timingSafeEqual(computedSignatureBuffer, receivedSignatureBuffer);
+  const isValid = computedSignature === receivedSignature;
+  return isValid;
 }
 
 export async function POST(request: NextRequest) {
