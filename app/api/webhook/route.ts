@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 // Function to encode data
 function encodeData(data: any): Buffer {
   const formattedData = JSON.stringify(data);
-  return Buffer.from(formattedData, "utf-8");
+  return Buffer.from(formattedData, "ascii");
 }
 
 // Function to verify the signature
