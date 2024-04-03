@@ -63,6 +63,28 @@ Finally, launch the development server. Open your browser and navigate to `http:
 npm run dev
 ```
 
+### Step 7: Use webhooks locally
+
+Install ngrok or othher webhook tunnel package.
+
+```bash
+sudo snap install ngrok
+```
+
+Authenticate using ngrok token
+
+```bash
+ngrok config add-authtoken YOUR_AUTH_TOKEN
+```
+
+Expose your local server using ngrok
+
+```bash
+ngrok http 3000
+```
+
+Copy the public URL into the webhook url in app settings of Didit business console
+
 ---
 
 You're now ready to start developing with the project setup! For more detailed documentation or troubleshooting tips, refer to the official documentation or the `README.md` file within the project repository.
