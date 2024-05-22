@@ -16,8 +16,9 @@ import { AugmentedUser } from "./types";
 const nunito = Nunito({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Didit x Hotels",
-  description: "Book hotels with no extra charge",
+  title: "Didit Demo App",
+  description:
+    "Didit Demo App that integrates Didit Auth and Didit Verification on Next.js",
 };
 
 export default async function RootLayout({
