@@ -17,9 +17,9 @@ import {
   ExternalLink,
   RefreshCw,
   LogOut,
-  AlertTriangle,
   Copy,
   CheckCircle,
+  RotateCcw,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -29,11 +29,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import WebhookLogs from "@/components/webhook-logs";
 
 export default function Home() {
   const { data: session, update } = useSession();
   const [verificationUrl, setVerificationUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isIframe, setIsIframe] = useState(false);
 
@@ -54,6 +56,23 @@ export default function Home() {
     }
   };
 
+  const resetVerification = async () => {
+    setIsResetting(true);
+    try {
+      const response = await fetch("/api/reset-verification", {
+        method: "POST",
+      });
+      if (response.ok) {
+        setVerificationUrl("");
+        await update(); // Refresh session
+      }
+    } catch (error) {
+      console.error("Error resetting verification:", error);
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
   useEffect(() => {
     const intervalId = setInterval(() => {
       update();
@@ -68,59 +87,43 @@ export default function Home() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const isConfigInvalid =
-    process.env.API_KEY === "" ||
-    process.env.SHARED_SECRET_KEY === "" ||
-    process.env.VERIFICATION_WORKFLOW_ID === "";
-
-  if (isConfigInvalid) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background to-secondary flex flex-col justify-center py-6 px-4 sm:px-6 lg:px-8">
-        <Alert variant="destructive" className="max-w-2xl mx-auto">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>Configuration Error</AlertTitle>
-          <AlertDescription>
-            <p>
-              Please set the following environment variables in your .env file:
-            </p>
-            <ul className="list-disc list-inside mt-2">
-              <li>API_KEY</li>
-              <li>SHARED_SECRET_KEY</li>
-              <li>VERIFICATION_WORKFLOW_ID</li>
-            </ul>
-            <p className="mt-2">
-              One or more of these variables are either not set or have invalid
-              values.
-            </p>
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-secondary flex flex-col justify-center py-6 px-4 sm:px-6 lg:px-8">
-      <Card className="mx-auto w-full max-w-4xl shadow-lg">
-        <CardHeader className="space-y-2">
-          <div className="flex justify-between items-center">
-            <CardTitle className="text-3xl font-bold">
-              Welcome, {session?.user?.name || session?.user?.email}!
-            </CardTitle>
-            {session?.user?.isVerified !== undefined && (
-              <Badge
-                variant={session.user.isVerified ? "default" : "outline"}
-                className="text-sm py-1 px-3"
-              >
-                {session.user.isVerified ? "Verified" : "Not Verified"}
-              </Badge>
+    <div className="min-h-screen bg-gradient-to-br from-background to-secondary py-6 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-4xl">
+        <Card className="shadow-lg">
+          <CardHeader className="space-y-2">
+            <div className="flex justify-between items-center">
+              <CardTitle className="text-3xl font-bold">
+                Welcome, {session?.user?.name || session?.user?.email}!
+              </CardTitle>
+              {session?.user?.isVerified !== undefined && (
+                <Badge
+                  variant={session.user.isVerified ? "default" : "outline"}
+                  className="text-sm py-1 px-3"
+                >
+                  {session.user.isVerified ? "Verified" : "Not Verified"}
+                </Badge>
+              )}
+            </div>
+            <CardDescription>
+              Manage your verification status and session here.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Show verified success message with reset option */}
+            {session?.user?.isVerified && (
+              <Alert className="border-green-500 bg-green-50">
+                <CheckCircle className="h-4 w-4 text-green-500" />
+                <AlertTitle className="text-green-700">
+                  Verification Complete!
+                </AlertTitle>
+                <AlertDescription className="text-green-600">
+                  Your identity has been verified. To test webhooks again, reset
+                  your verification status below.
+                </AlertDescription>
+              </Alert>
             )}
-          </div>
-          <CardDescription>
-            Manage your verification status and session here.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {!session?.user?.isVerified && (
+
             <div className="space-y-4">
               <Alert>
                 <AlertTitle>Integration Options</AlertTitle>
@@ -269,16 +272,38 @@ export default function Home() {
                 )}
               </div>
             </div>
-          )}
-          <Button
-            onClick={() => signOut({ callbackUrl: "/signin" })}
-            variant="secondary"
-            className="w-full py-2 text-sm"
-          >
-            <LogOut className="mr-2 h-4 w-4" /> Sign Out
-          </Button>
-        </CardContent>
-      </Card>
+
+            {/* Reset and Sign Out buttons */}
+            <div className="flex flex-col sm:flex-row gap-2">
+              {session?.user?.isVerified && (
+                <Button
+                  onClick={resetVerification}
+                  disabled={isResetting}
+                  variant="outline"
+                  className="w-full sm:w-auto py-2 text-sm"
+                >
+                  {isResetting ? (
+                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <RotateCcw className="mr-2 h-4 w-4" />
+                  )}
+                  Reset Verification (Test Again)
+                </Button>
+              )}
+              <Button
+                onClick={() => signOut({ callbackUrl: "/signin" })}
+                variant="secondary"
+                className="w-full sm:flex-1 py-2 text-sm"
+              >
+                <LogOut className="mr-2 h-4 w-4" /> Sign Out
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Webhook Logs Section */}
+        <WebhookLogs />
+      </div>
     </div>
   );
 }

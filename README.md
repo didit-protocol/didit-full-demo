@@ -2,7 +2,7 @@
 
 Welcome! Follow these steps to set up the project environment and start developing.
 
-This demo is a vanilla implementation of Didit Identity Verification
+This demo is a vanilla implementation of Didit Identity Verification using the **v3 API**.
 
 ### Step 1: Clone the Repository
 
@@ -25,19 +25,32 @@ npm install
 
 Before running the application, you'll need to get some environment variables:
 
-1. Visit [https://business.didit.me](https://business.didit.me) to obtain your `API_KEY`, and `SHARED_SECRET_KEY` (for handling webhooks).
+1. Visit [https://business.didit.me](https://business.didit.me) to obtain your `API_KEY` and `WEBHOOK_SECRET_KEY` (for handling webhooks).
 2. In the application's advanced settings, correctly configure `WEBHOOK_URL` to point to your server. For development purposes, you might use:
-   - `WEBHOOK_URL` = `https://yourapp.com/api/webhook`
+   - `WEBHOOK_URL` = `https://yourapp.com/api/verification/webhook`
 
 ### Step 4: Set Up `.env` File
 
 Duplicate the `.env.example` file, rename the duplicate to `.env`, and fill in the environment variables you obtained from the step above. Your `.env` file will look something like this:
 
 ```plaintext
+# Didit API Configuration
 API_KEY=<YourApiKey>
-SHARED_SECRET_KEY=<YourSharedSecretKey>
+WEBHOOK_SECRET_KEY=<YourWebhookSecretKey>
 VERIFICATION_WORKFLOW_ID=<YourVerificationWorkflowId>
-# Add any other environment variables as needed.
+
+# API Base URL (default: https://verification.didit.me)
+NEXT_VERIFICATION_BASE_URL=https://verification.didit.me
+
+# Callback URL after verification (your app's callback page)
+VERIFICATION_CALLBACK_URL=http://localhost:3000/callback
+
+# NextAuth Configuration
+NEXTAUTH_SECRET=<GenerateASecretForNextAuth>
+NEXTAUTH_URL=http://localhost:3000
+
+# Database (SQLite for local development)
+DATABASE_URL="file:./dev.db"
 ```
 
 ### Step 5: Generate Prisma Client and Understand the User Model
@@ -131,7 +144,7 @@ npm run dev
 
 ### Step 7: Use webhooks locally
 
-Install ngrok or othher webhook tunnel package.
+Install ngrok or another webhook tunnel package.
 
 ```bash
 sudo snap install ngrok
@@ -150,6 +163,53 @@ ngrok http 3000
 ```
 
 Copy the public URL into the webhook url in app settings of Didit business console adding the path `/api/verification/webhook` (for this demo)
+
+---
+
+## Webhook Signature Verification
+
+This demo supports **three signature verification methods** for webhooks, automatically trying them in order of reliability:
+
+### 1. Simple Signature (Recommended) - `X-Signature-Simple`
+
+The most reliable method, immune to JSON re-encoding issues. Uses only specific fields:
+
+```typescript
+const signatureData = `${session_id}|${status}|${created_at}`;
+const expectedSignature = createHmac("sha256", secret)
+  .update(signatureData)
+  .digest("hex");
+```
+
+### 2. V2 Signature - `X-Signature-V2`
+
+Uses explicit UTF-8 encoding for better unicode character support:
+
+```typescript
+const encoder = new TextEncoder();
+const bodyBytes = encoder.encode(rawBody);
+const expectedSignature = createHmac("sha256", secret)
+  .update(bodyBytes)
+  .digest("hex");
+```
+
+### 3. Original Signature - `X-Signature`
+
+The original method, which can have issues if middleware re-encodes the request body with different JSON formatting.
+
+**Note:** Didit sends all three signature headers with each webhook. This demo automatically verifies using the most reliable available method.
+
+---
+
+## API Endpoints Used
+
+This demo uses the following Didit v3 API endpoints:
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/v3/session/` | POST | Create a new verification session |
+
+For more information, see the [Didit API Documentation](https://docs.didit.me).
 
 ---
 

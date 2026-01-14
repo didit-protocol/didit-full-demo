@@ -1,31 +1,17 @@
 // src/middleware.ts
 import { withAuth } from "next-auth/middleware";
-import { NextResponse } from "next/server";
 
-export default withAuth(
-  function middleware(req) {
-    // Allow access to the register page
-    if (req.nextUrl.pathname === "/register") {
-      return NextResponse.next();
-    }
+export default withAuth({
+  pages: {
+    signIn: "/signin",
   },
-  {
-    pages: {
-      signIn: "/signin",
-    },
-  }
-);
+});
 
-// Exclude API routes and Next.js special routes from middleware
+// Exclude API routes, auth pages, and Next.js special routes from middleware
 export const config = {
   matcher: [
-    // Match all paths except for:
-    // - /api routes
-    // - /_next (Next.js internals)
-    // - /static (static files)
-    // - /.*\\..* (files with extensions like .css, .js, .png)
-    // - /favicon.ico
-    // - /register (registration page)
-    "/((?!api/|_next/|static/|.*\\..*|favicon.ico|register).*)",
+    // Only protect these specific routes that need authentication
+    // Everything else is public
+    "/((?!api/|_next/|static/|.*\\..*|favicon.ico|signin|register|callback).*)",
   ],
 };

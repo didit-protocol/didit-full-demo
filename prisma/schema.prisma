@@ -83,3 +83,17 @@ model VerificationToken {
   @@unique([identifier, token])
   @@map("verification_tokens")
 }
+
+model WebhookLog {
+  id                  String   @id @default(cuid())
+  sessionId           String
+  status              String
+  signatureMethod     String?  // "simple", "v2", "original", or null if failed
+  signatureValid      Boolean
+  rawPayload          String   // JSON string of the full webhook payload
+  headers             String?  // JSON string of relevant headers
+  errorMessage        String?  // If signature validation failed
+  createdAt           DateTime @default(now())
+
+  @@map("webhook_logs")
+}
