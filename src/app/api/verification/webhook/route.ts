@@ -284,8 +284,10 @@ export async function POST(request: NextRequest) {
   });
 
   if (!user) {
-    console.error(`User not found for email: ${email}`);
-    return NextResponse.json({ message: "User not found" }, { status: 404 });
+    console.warn(`User not found for email: ${email}`);
+    // Return 200 to acknowledge receipt - using 404 would be confusing as it looks like "route not found"
+    // Webhooks should typically return 2xx to prevent the sender from retrying
+    return NextResponse.json({ message: "User not found", acknowledged: true }, { status: 200 });
   }
 
   await prisma.verificationSession.upsert({
